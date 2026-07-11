@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://dn2a0b7wk6vqy"]
+
+[node name="Node3D" type="Node3D" unique_id=546313772]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.6139898)
+
+[node name="blendshape_test_usda" type="UsdStageNode3D" parent="." unique_id=640938245]
+stage_uri = "res://blendshape_test.usda"
+cached_scene_name = "user://usd_cache/blendshape_test_2896401783_.scn"
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0.004814148)
+metadata/__iusdnode3d_ptr = 2405738247416

@@ -1,0 +1,83 @@
+[gd_scene format=4 uid="uid://c1itg753lu7tp"]
+
+[ext_resource type="Script" uid="uid://cvcqbisedpqaj" path="res://render_test.gd" id="1"]
+[ext_resource type="PackedScene" path="res://unassigned_vert_test_1607459122_.scn" id="2_4hh4d"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_734i4"]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_qsug6"]
+_surfaces = [{
+"aabb": AABB(-1, -1, 0, 2, 2, 1e-05),
+"attribute_data": PackedByteArray("AAAAAAAAAIAAAIA/AAAAgAAAgD8AAIC/AAAAAAAAgL8="),
+"bone_aabbs": [AABB(-1, 1, 0, 2.00001, 1.001358e-05, 1e-05), AABB(-1, -1, 0, 2, 1.001358e-05, 1e-05)],
+"format": 34359745559,
+"index_count": 6,
+"index_data": PackedByteArray("AAACAAEAAAADAAIA"),
+"material": SubResource("StandardMaterial3D_734i4"),
+"primitive": 3,
+"skin_data": PackedByteArray("AQAAAAAAAAD//wAAAAAAAAEAAAAAAAAA//8AAAAAAAAAAAAAAAAAAP//AAAAAAAAAAAAAAAAAAD//wAAAAAAAA=="),
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray("AACAvwAAgL8AAAAAAACAPwAAgL8AAAAAAACAPwAAgD8AAAAAAACAvwAAgD8AAAAA/3//f/9/AID/f/9//38AgP9//3//fwCA/3//f/9/AIA=")
+}]
+
+[sub_resource type="Skin" id="Skin_vosld"]
+bind_count = 2
+bind/0/name = &"Bone"
+bind/0/bone = -1
+bind/0/pose = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0)
+bind/1/name = &"neutral_bone"
+bind/1/bone = -1
+bind/1/pose = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ydpo1"]
+vertex_color_use_as_albedo = true
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_p4ctk"]
+_surfaces = [{
+"aabb": AABB(-1, -1, -1, 2, 2, 2),
+"attribute_data": PackedByteArray("AADAPgAAAIAAACA/AAAAgAAAID8AAIC+AADAPgAAgL4AAMA+AACAvgAAID8AAIC+AAAgPwAAAL8AAMA+AAAAvwAAwD4AAAC/AAAgPwAAAL8AACA/AABAvwAAwD4AAEC/AADAPgAAQL8AACA/AABAvwAAID8AAIC/AADAPgAAgL8AAAA+AAAAvwAAwD4AAAC/AADAPgAAQL8AAAA+AABAvwAAID8AAAC/AABgPwAAAL8AAGA/AABAvwAAID8AAEC/"),
+"format": 34359742487,
+"index_count": 36,
+"index_data": PackedByteArray("AAACAAEAAAADAAIABAAGAAUABAAHAAYACAAKAAkACAALAAoADAAOAA0ADAAPAA4AEAASABEAEAATABIAFAAWABUAFAAXABYA"),
+"material": SubResource("StandardMaterial3D_ydpo1"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("AACAvwAAgL8AAIC/AACAvwAAgL8AAIA/AACAvwAAgD8AAIA/AACAvwAAgD8AAIC/AACAvwAAgD8AAIC/AACAvwAAgD8AAIA/AACAPwAAgD8AAIA/AACAPwAAgD8AAIC/AACAPwAAgD8AAIC/AACAPwAAgD8AAIA/AACAPwAAgL8AAIA/AACAPwAAgL8AAIC/AACAPwAAgL8AAIC/AACAPwAAgL8AAIA/AACAvwAAgL8AAIA/AACAvwAAgL8AAIC/AACAvwAAgD8AAIC/AACAPwAAgD8AAIC/AACAPwAAgL8AAIC/AACAvwAAgL8AAIC/AACAPwAAgD8AAIA/AACAvwAAgD8AAIA/AACAvwAAgL8AAIA/AACAPwAAgL8AAIA/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//7//f///AAD/v/9///8AAP+//3///wAA/7//f///AAD/v////3//f/+/////f/9//7////9//3//v////3//f/+//38AAAAA/7//fwAAAAD/v/9/AAAAAP+//38AAAAA/7///////38AgP//////fwCA//////9/AID//////38AgP9//3//fwCA/3//f/9/AID/f/9//38AgP9//3//fwCA")
+}]
+
+[node name="Root" type="Node3D" unique_id=254514136]
+script = ExtResource("1")
+
+[node name="unassigned_vert_test_usda" type="UsdStageNode3D" parent="." unique_id=781639145]
+stage_uri = "res://unassigned_vert_test.usda"
+cached_scene_name = "user://usd_cache/unassigned_vert_test_1607459122_.scn"
+metadata/__iusdnode3d_ptr = 2695412643016
+
+[node name="unassigned_vert_test_usda2" parent="." unique_id=608650016 instance=ExtResource("2_4hh4d")]
+metadata/__iusdnode3d_ptr = 2695412512840
+
+[node name="root" parent="unassigned_vert_test_usda2" index="0" unique_id=1222419203]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 8.306467)
+metadata/__iusdnode3d_ptr = 2696867293768
+
+[node name="Plane" parent="unassigned_vert_test_usda2/root" index="0" unique_id=543197398]
+mesh = SubResource("ArrayMesh_qsug6")
+skin = SubResource("Skin_vosld")
+metadata/__iusdnode3d_ptr = 2695229915944
+
+[node name="Cube" parent="unassigned_vert_test_usda2/root" index="1" unique_id=277831483]
+metadata/__iusdnode3d_ptr = 2695065662584
+
+[node name="Cube" parent="unassigned_vert_test_usda2/root/Cube" index="0" unique_id=1587160907]
+mesh = SubResource("ArrayMesh_p4ctk")
+metadata/__iusdnode3d_ptr = 2695229914184
+
+[node name="Armature" parent="unassigned_vert_test_usda2/root" index="2" unique_id=266757421]
+metadata/__iusdnode3d_ptr = 2695065663880
+
+[node name="Plane2" parent="unassigned_vert_test_usda2/root" index="3" unique_id=197497356]
+metadata/__iusdnode3d_ptr = 2695065662728
+
+[editable path="unassigned_vert_test_usda2"]
