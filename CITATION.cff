@@ -1,0 +1,53 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "datasource-flow-project: the Godot test project for the IDTX Flow extension"
+abstract: >
+  The Godot project that exercises datasource-flow. It holds no library code: it is
+  scenes, USD fixtures and inspection scripts -- blendshape and morph stress tests,
+  normals and skinning checks, unassigned-vertex cases -- with the rendered results
+  committed beside them. An importer is judged by what comes out the far end, and a
+  fixture with its output next to it is the only form of that claim a reader can check
+  without running anything.
+authors:
+  - family-names: Lee
+    given-names: "K. S. Ernest (iFire)"
+    email: ernest.lee@chibifire.com
+    orcid: "https://orcid.org/0000-0003-4570-1436"
+version: 0.1.0-dev.1
+date-released: "2026-08-17"
+license: MIT
+repository-code: "https://github.com/v-sekai-multiplayer-fabric/datasource-flow-project"
+keywords:
+  - godot
+  - usd
+  - test-fixtures
+  - regression-testing
+references:
+
+  - type: software
+    title: "datasource-flow: IDTX Flow as a Godot extension"
+    authors:
+      - family-names: Lee
+        given-names: "K. S. Ernest (iFire)"
+    url: "https://github.com/v-sekai-multiplayer-fabric/datasource-flow"
+    notes: >
+      The extension under test, vendored here as addons/IDTXFlow. This repository is
+      that one's evidence, which is why they are separate: a fixture set that ships
+      inside the thing it tests can be quietly adjusted to pass.
+
+  - type: software
+    title: "transport-godot-mcp: an in-editor MCP server for the Godot editor"
+    authors:
+      - family-names: Lee
+        given-names: "K. S. Ernest (iFire)"
+    url: "https://github.com/v-sekai-multiplayer-fabric/transport-godot-mcp"
+    notes: >
+      Vendored as addons/vsekai_godot_mcp, from its addon-root branch. It is how the
+      inspection scripts are driven without a person clicking through the editor.
+
+  - type: software
+    title: "OpenUSD: Universal Scene Description"
+    authors:
+      - name: "Pixar Animation Studios"
+    url: "https://openusd.org/"
+    notes: "The .usda fixtures are USD; the format decides what the tests can express."
