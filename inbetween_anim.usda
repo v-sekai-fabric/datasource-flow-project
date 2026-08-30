@@ -1,0 +1,74 @@
+#usda 1.0
+(
+    doc = "In-between bake control: primary keyed 0 -> 1 -> 0; only a crossing-time key can raise the in-between to its peak"
+    endTimeCode = 48
+    startTimeCode = 0
+    timeCodesPerSecond = 24
+    upAxis = "Y"
+)
+
+def SkelRoot "Char"
+{
+    def Skeleton "Skel" (
+        prepend apiSchemas = ["SkelBindingAPI"]
+    )
+    {
+        uniform matrix4d[] bindTransforms = [( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1) )]
+        uniform token[] joints = ["root"]
+        uniform matrix4d[] restTransforms = [( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1) )]
+        rel skel:animationSource = </Char/Skel/Anim>
+
+        def SkelAnimation "Anim"
+        {
+            uniform token[] blendShapes = ["lean"]
+            float[] blendShapeWeights.timeSamples = {
+                0: [0],
+                24: [1],
+                48: [0],
+            }
+            uniform token[] joints = ["root"]
+            quatf[] rotations.timeSamples = {
+                0: [(1, 0, 0, 0)],
+                48: [(1, 0, 0, 0)],
+            }
+            half3[] scales.timeSamples = {
+                0: [(1, 1, 1)],
+                48: [(1, 1, 1)],
+            }
+            float3[] translations.timeSamples = {
+                0: [(0, 0, 0)],
+                48: [(0, 0, 0)],
+            }
+        }
+    }
+
+    def Mesh "Quad" (
+        prepend apiSchemas = ["SkelBindingAPI"]
+    )
+    {
+        int[] faceVertexCounts = [4]
+        int[] faceVertexIndices = [0, 1, 2, 3]
+        point3f[] points = [(-1, 0, 0), (1, 0, 0), (1, 2, 0), (-1, 2, 0)]
+        int[] primvars:skel:jointIndices = [0, 0, 0, 0] (
+            elementSize = 1
+            interpolation = "vertex"
+        )
+        float[] primvars:skel:jointWeights = [1, 1, 1, 1] (
+            elementSize = 1
+            interpolation = "vertex"
+        )
+        uniform token[] skel:blendShapes = ["lean"]
+        rel skel:blendShapeTargets = </Char/Quad/lean>
+        rel skel:skeleton = </Char/Skel>
+
+        def BlendShape "lean"
+        {
+            uniform point3f[] inbetweens:bulge = [(0, 0, 0), (0, 0, 0), (0.6, 0, 0.2), (0.6, 0, 0.2)] (
+                weight = 0.5
+            )
+            uniform vector3f[] offsets = [(0, 0, 0), (0, 0, 0), (0, 0, 1), (0, 0, 1)]
+            uniform int[] pointIndices = [0, 1, 2, 3]
+        }
+    }
+}
+
