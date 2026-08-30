@@ -1,17 +1,18 @@
 extends SceneTree
 
-# Plays art/stress_test_animation/morph_stress_test.usdc (8 shapes, 250 weight
-# samples, NO joint samples — the case the old joint-timecode sampling flattened
-# to one rest key) and compares each shape's observed range against the authored
-# curves. Key_8's authored peak is 0.1754, not 1.0, so a track-order mixup or a
-# normalisation error fails here even when "everything moved".
+# Plays art/stress_test_animation/morph_stress_test.usda — rebuilt directly
+# from Khronos's MorphStressTest.glb by make_morph_stress_from_gltf.py (no
+# Blender in the chain). 8 shapes, 281 weight samples, no joint samples: the
+# case joint-timecode sampling flattens to one rest key. Every shape's
+# authored range is [0, 1] in the canonical source; the earlier 0.1754 peak
+# on Key_8 was an artifact of the Blender-converted usdc this replaces.
 
-const FIXTURE := "res://art/stress_test_animation/morph_stress_test.usdc"
-const CLIP_SECONDS := 250.0 / 30.0
-# Authored per-shape max, read from the usdc with UsdSkel.Animation.
+const FIXTURE := "res://art/stress_test_animation/morph_stress_test.usda"
+const CLIP_SECONDS := 8.0
+# Authored per-shape max, printed by the generator from the GLB samplers.
 const EXPECT_MAX := {
 	"Key_1": 1.0, "Key_2": 1.0, "Key_3": 1.0, "Key_4": 1.0,
-	"Key_5": 1.0, "Key_6": 1.0, "Key_7": 1.0, "Key_8": 0.1754,
+	"Key_5": 1.0, "Key_6": 1.0, "Key_7": 1.0, "Key_8": 1.0,
 }
 const TOL := 0.06
 
@@ -31,6 +32,15 @@ func _initialize() -> void:
 	var stage = ClassDB.instantiate("UsdStageNode3D")
 	world.add_child(stage)
 	stage.set("stage_uri", FIXTURE)
+
+func _find_skel(node: Node) -> Skeleton3D:
+	if node is Skeleton3D:
+		return node
+	for c in node.get_children():
+		var r := _find_skel(c)
+		if r:
+			return r
+	return null
 
 func _find_blend_mesh(node: Node) -> MeshInstance3D:
 	if node is MeshInstance3D and node.get_blend_shape_count() > 0:
@@ -69,15 +79,36 @@ func _process(_delta: float) -> bool:
 	if _hi.size() != EXPECT_MAX.size():
 		printerr("FAIL: %d shapes observed, %d expected" % [_hi.size(), EXPECT_MAX.size()])
 		failures += 1
+	# Structural fidelity: densely interpolate the imported tracks. A live frame
+	# sweep cannot pin a one-sample-wide authored spike (Key_8 measured 0.845
+	# at frame rate), but the track itself must carry the full curve.
+	var sk := _find_skel(root)
+	var anim: Animation = sk.get_animation() if sk and sk.has_method("get_animation") else null
+	var track_max := {}
+	if anim:
+		for t in anim.get_track_count():
+			if anim.track_get_type(t) != Animation.TYPE_BLEND_SHAPE:
+				continue
+			var nm := str(anim.track_get_path(t)).get_file()
+			var mx := 0.0
+			var tt := 0.0
+			while tt <= anim.length:
+				mx = max(mx, anim.blend_shape_track_interpolate(t, tt))
+				tt += 0.001
+			track_max[nm] = mx
 	for nm in EXPECT_MAX:
 		if not _hi.has(nm):
 			printerr("FAIL: shape %s missing" % nm)
 			failures += 1
 			continue
 		var want: float = EXPECT_MAX[nm]
-		print("%s  observed [%.3f, %.3f]  authored max %.3f" % [nm, _lo[nm], _hi[nm], want])
-		if abs(_hi[nm] - want) > TOL:
-			printerr("FAIL: %s max %.3f vs authored %.3f" % [nm, _hi[nm], want])
+		var tm: float = track_max.get(nm, -1.0)
+		print("%s  live [%.3f, %.3f]  track max %.3f  authored %.3f" % [nm, _lo[nm], _hi[nm], tm, want])
+		if abs(tm - want) > 0.01:
+			printerr("FAIL: %s track max %.3f vs authored %.3f" % [nm, tm, want])
+			failures += 1
+		if _hi[nm] < 0.5:
+			printerr("FAIL: %s barely moves live (max %.3f); playback is not driving it" % [nm, _hi[nm]])
 			failures += 1
 		if _lo[nm] > TOL:
 			printerr("FAIL: %s never returns near 0 (min %.3f)" % [nm, _lo[nm]])
