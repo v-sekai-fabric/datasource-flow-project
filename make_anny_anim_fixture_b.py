@@ -138,40 +138,52 @@ def main():
               for i in range(len(parents))]
         ph_decomp[name] = [Gf.Transform(m) for m in rl]
 
-    end_all = END * len(ph_axes)
-    stage.SetEndTimeCode(end_all)
-    anim = UsdSkel.Animation.Define(stage, Sdf.Path("/Subject/Skeleton/Anim"))
-    anim.CreateJointsAttr(Vt.TokenArray(paths))
-    rots = anim.CreateRotationsAttr()
-    trans = anim.CreateTranslationsAttr()
-    scales = anim.CreateScalesAttr()
-    anim.CreateBlendShapesAttr(Vt.TokenArray(shape_names))
-    w = anim.CreateBlendShapeWeightsAttr()
+    # Eleven INDEPENDENT clips, one SkelAnimation prim per axis, each 0 -> 1
+    # over two seconds and holding at 1: scrubbing a clip is that axis's
+    # slider, and independent clips can be blended -- segments of one shared
+    # timeline cannot compose two phenotypes. Each clip declares only its own
+    # shape, so its weight track carries exactly one curve.
+    stage.SetEndTimeCode(END)
 
-    def set_joints(tc, dc, bend_deg):
-        q = [Gf.Quatf(tf.GetRotation().GetQuat()) for tf in dc]
-        t = [Gf.Vec3f(tf.GetTranslation()) for tf in dc]
-        extra = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1, 0, 0), bend_deg).GetQuat())
-        q[bend] = q[bend] * extra
-        rots.Set(Vt.QuatfArray(q), Usd.TimeCode(tc))
-        trans.Set(Vt.Vec3fArray(t), Usd.TimeCode(tc))
-        scales.Set(Vt.Vec3hArray([Gf.Vec3h(1, 1, 1)] * len(paths)), Usd.TimeCode(tc))
+    def author_clip(prim_name, axis_name, dc_end, bend_deg_end):
+        a = UsdSkel.Animation.Define(stage, Sdf.Path("/Subject/Skeleton/" + prim_name))
+        a.CreateJointsAttr(Vt.TokenArray(paths))
+        rots = a.CreateRotationsAttr()
+        trans = a.CreateTranslationsAttr()
+        scales = a.CreateScalesAttr()
+        for tc, dc, deg in ((0, decomp, 0.0), (END, dc_end, bend_deg_end)):
+            q = [Gf.Quatf(tf.GetRotation().GetQuat()) for tf in dc]
+            t = [Gf.Vec3f(tf.GetTranslation()) for tf in dc]
+            extra = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1, 0, 0), deg).GetQuat())
+            q[bend] = q[bend] * extra
+            rots.Set(Vt.QuatfArray(q), Usd.TimeCode(tc))
+            trans.Set(Vt.Vec3fArray(t), Usd.TimeCode(tc))
+            scales.Set(Vt.Vec3hArray([Gf.Vec3h(1, 1, 1)] * len(paths)), Usd.TimeCode(tc))
+        a.CreateBlendShapesAttr(Vt.TokenArray([axis_name]))
+        w = a.CreateBlendShapeWeightsAttr()
+        w.Set(Vt.FloatArray([0.0]), Usd.TimeCode(0))
+        w.Set(Vt.FloatArray([1.0]), Usd.TimeCode(END))
+        return a
 
-    def set_weights(tc, axis_name, v):
-        vals = np.zeros(len(shape_names), np.float32)
-        if axis_name is not None:
-            vals[shape_names.index(axis_name)] = v
-        w.Set(Vt.FloatArray.FromNumpy(vals), Usd.TimeCode(tc))
+    clips = {}
+    for name in ph_axes:
+        clips[name] = author_clip("clip_" + name, name, ph_decomp[name],
+                                  90.0 if name == "ph_weight" else 0.0)
+    anim = clips["ph_weight"]
 
-    for seg, name in enumerate(ph_axes):
-        t0 = seg * END
-        bend_deg = 90.0 if seg == 0 else 0.0
-        set_joints(t0, decomp, 0.0)
-        set_joints(t0 + END // 2, ph_decomp[name], bend_deg)
-        set_joints(t0 + END, decomp, 0.0)
-        set_weights(t0, None, 0.0)
-        set_weights(t0 + END // 2, name, 1.0)
-        set_weights(t0 + END, None, 0.0)
+    # The USD-native selector: a variantSet on the skeleton where each variant
+    # rebinds skel:animationSource to one clip -- the documented pattern for
+    # swappable animation. Blending is deliberately absent from UsdSkel (it is
+    # a baked-interchange model); the engine's AnimationTree owns that, fed by
+    # the clip library the adapter builds from these prims.
+    vset = skel.GetPrim().GetVariantSets().AddVariantSet("clip")
+    for name in ph_axes:
+        vset.AddVariant(name)
+        vset.SetVariantSelection(name)
+        with vset.GetVariantEditContext():
+            UsdSkel.BindingAPI.Apply(skel.GetPrim()).CreateAnimationSourceRel().SetTargets(
+                [clips[name].GetPath()])
+    vset.SetVariantSelection("ph_weight")
     UsdSkel.BindingAPI.Apply(skel.GetPrim()).CreateAnimationSourceRel().SetTargets(
         [anim.GetPath()])
 

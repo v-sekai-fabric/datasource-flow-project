@@ -78,6 +78,29 @@ func _process(_delta: float) -> bool:
 				printerr("FAIL: expected 317 shapes (11 phenotypes + 52 facial actions + 254 local changes)")
 				quit(1)
 				return true
+			var clips: Dictionary = _sk.get_animations()
+			if clips.size() != 11 or not clips.has("clip_ph_weight"):
+				printerr("FAIL: expected 11 independent phenotype clips, got %d %s" % [clips.size(), clips.keys()])
+				quit(1)
+				return true
+			# Composability evidence: two different clips end (t=2 s) driving two
+			# DIFFERENT shapes to 1 -- each clip owns exactly one axis, so any
+			# pair can be blended without fighting over a track.
+			var a: Animation = clips["clip_ph_weight"]
+			var b: Animation = clips["clip_ph_muscle"]
+			var a_shape := ""
+			var b_shape := ""
+			for t in a.get_track_count():
+				if a.track_get_type(t) == Animation.TYPE_BLEND_SHAPE and a.blend_shape_track_interpolate(t, 2.0) > 0.99:
+					a_shape = str(a.track_get_path(t)).get_file()
+			for t in b.get_track_count():
+				if b.track_get_type(t) == Animation.TYPE_BLEND_SHAPE and b.blend_shape_track_interpolate(t, 2.0) > 0.99:
+					b_shape = str(b.track_get_path(t)).get_file()
+			if a_shape != "ph_weight" or b_shape != "ph_muscle":
+				printerr("FAIL: clips do not each own their axis (got %s / %s)" % [a_shape, b_shape])
+				quit(1)
+				return true
+			print("independent clips: 11; clip_ph_weight -> %s at 1.0, clip_ph_muscle -> %s at 1.0" % [a_shape, b_shape])
 			if _animated_idx < 0 or _still_idx < 0:
 				printerr("FAIL: ph_weight or fa_jawOpen shape missing")
 				quit(1)

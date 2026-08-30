@@ -31,8 +31,7 @@ func _process(_d: float) -> bool:
 			break
 		for c in n.get_children():
 			stack.append(c)
-	if sk != null and sk.has_method("get_animation") and sk.get_animation() != null:
-		var src: Animation = sk.get_animation()
+	if sk != null and sk.has_method("get_animations"):
 		var mi: MeshInstance3D = null
 		for c in sk.get_children():
 			if c is MeshInstance3D and c.get_blend_shape_count() > 0:
@@ -46,27 +45,30 @@ func _process(_d: float) -> bool:
 		# Source bone tracks carry full slashed USD joint paths, which cannot
 		# ride in a :subname; the joint map resolves them to real bone names.
 		var jmap: Dictionary = sk.get_joint_map()
-		var clip := Animation.new()
-		clip.length = src.length
-		for t in src.get_track_count():
-			var tt := src.track_get_type(t)
-			var old_path := str(src.track_get_path(t))
-			var nt := clip.add_track(tt)
-			if tt == Animation.TYPE_BLEND_SHAPE:
-				if mi == null:
-					continue
-				clip.track_set_path(nt, NodePath(mi_path + ":" + old_path.get_file()))
-			else:
-				var bi: int = jmap.get(NodePath(old_path), -1)
-				if bi < 0:
-					continue
-				clip.track_set_path(nt, NodePath(sk_path + ":" + sk.get_bone_name(bi)))
-			for k in src.track_get_key_count(t):
-				clip.track_insert_key(nt, src.track_get_key_time(t, k), src.track_get_key_value(t, k))
 		var lib := AnimationLibrary.new()
-		lib.add_animation("anny_clip", clip)
+		var clips: Dictionary = sk.get_animations()
+		for clip_name in clips:
+			var src: Animation = clips[clip_name]
+			var clip := Animation.new()
+			clip.length = src.length
+			for t in src.get_track_count():
+				var tt := src.track_get_type(t)
+				var old_path := str(src.track_get_path(t))
+				var nt := clip.add_track(tt)
+				if tt == Animation.TYPE_BLEND_SHAPE:
+					if mi == null:
+						continue
+					clip.track_set_path(nt, NodePath(mi_path + ":" + old_path.get_file()))
+				else:
+					var bi: int = jmap.get(NodePath(old_path), -1)
+					if bi < 0:
+						continue
+					clip.track_set_path(nt, NodePath(sk_path + ":" + sk.get_bone_name(bi)))
+				for k in src.track_get_key_count(t):
+					clip.track_insert_key(nt, src.track_get_key_time(t, k), src.track_get_key_value(t, k))
+			lib.add_animation(clip_name, clip)
 		player.add_animation_library("", lib)
-		print("animation player assembled: %d tracks, %.1f s" % [clip.get_track_count(), clip.length])
+		print("animation player assembled: %d independent clips" % clips.size())
 
 	var doc := GLTFDocument.new()
 	var state := GLTFState.new()
