@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="flow-project"
-run/main_scene="res://render_test.tscn"
+run/main_scene="uid://wyjnm3lmjg74"
 config/features=PackedStringArray("4.7")
 
 [editor_plugins]

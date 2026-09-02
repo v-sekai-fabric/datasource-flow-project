@@ -14,6 +14,13 @@ export_credentials.cfg
 # Imported translations (automatically generated from CSV files)
 *.translation
 
+# Fixture data lives on Hugging Face — see README.md
+anny_anim_fixture.npz
+anny_anim_fixture.names.json
+render_test.tscn
+art/canonical_anny/anny_anim_test.usdz
+art/canonical_anny/anny_anim_test.glb
+
 # Mono-specific ignores
 .mono/
 data_*/
